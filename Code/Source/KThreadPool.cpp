@@ -2,7 +2,7 @@
 
 #include <ranges>
 
-namespace KTP
+namespace Kayou
 {
 	KThreadPool::~KThreadPool()
 	{

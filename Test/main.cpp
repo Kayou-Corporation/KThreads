@@ -9,7 +9,7 @@ int main()
 {
 	for (int i = 0; i < 100; ++i)
 	{
-		KTP::KThreadPool threadPool;
+		Kayou::KThreadPool threadPool;
 		threadPool.InitQueue("Worker", 8);
 		for (int i = 0; i < 10; ++i)
 		{

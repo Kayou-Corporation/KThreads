@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.29.0)
 
 
 
-project(ThreadPool VERSION 1.0.0 LANGUAGES CXX)
+project(Threads VERSION 1.0.0 LANGUAGES CXX)
 
 
 
@@ -15,20 +15,20 @@ project(ThreadPool VERSION 1.0.0 LANGUAGES CXX)
 #            BUILD MODE                 #
 #---------------------------------------#
 
-add_executable(KTP_TEST "Main.cpp")
+add_executable(KThreads_TEST "Main.cpp")
 
 
 
 #---------------------------------------#
 #                COMPILE MODE           #
 #---------------------------------------#
-target_compile_features(KTP_TEST PUBLIC cxx_std_20)
+target_compile_features(KThreads_TEST PUBLIC cxx_std_20)
 
 if(MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")
-    target_compile_options(KTP_TEST PUBLIC /W4 /WX)
+    target_compile_options(KThreads_TEST PUBLIC /W4 /WX)
 else()
-    target_compile_options(KTP_TEST PUBLIC -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(KThreads_TEST PUBLIC -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 
@@ -40,4 +40,4 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-target_link_libraries(KTP_TEST PRIVATE KTP)
+target_link_libraries(KThreads_TEST PRIVATE KThreads)

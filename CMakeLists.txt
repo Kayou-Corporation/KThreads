@@ -3,7 +3,7 @@
 #---------------------------------------#
 cmake_minimum_required(VERSION 3.29.0 FATAL_ERROR)
 
-project(KTP VERSION 1.0.0 LANGUAGES CXX)
+project(KThreads VERSION 1.0.0 LANGUAGES CXX)
 
 
 
@@ -25,19 +25,19 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_DIR_BASE}/$<CONFIG>/libs")
 #---------------------------------------#
 #				SOURCES					#
 #---------------------------------------#
-file(GLOB_RECURSE KTP_SOURCES "Code/Source/*.cpp")
+file(GLOB_RECURSE KThreads_SOURCES "Code/Source/*.cpp")
 
 
 
 #---------------------------------------#
 #				BUILD MODE  			#
 #---------------------------------------#
-option(KTP_BUILD_STATIC "Build static libraries" ON)
+option(KThreads_BUILD_STATIC "Build static libraries" ON)
 
-if(KTP_BUILD_STATIC)
-    add_library(KTP STATIC ${KTP_SOURCES})
+if(KThreads_BUILD_STATIC)
+    add_library(KThreads STATIC ${KThreads_SOURCES})
 else()
-    add_library(KTP SHARED ${KTP_SOURCES})
+    add_library(KThreads SHARED ${KThreads_SOURCES})
 endif()
 
 
@@ -45,18 +45,18 @@ endif()
 #---------------------------------------#
 #                INCLUDE                #
 #---------------------------------------#
-target_include_directories(KTP PUBLIC "Code/Include")
+target_include_directories(KThreads PUBLIC "Code/Include")
 
 #---------------------------------------#
 #                COMPILE MODE           #
 #---------------------------------------#
-target_compile_features(KTP PUBLIC cxx_std_20)
+target_compile_features(KThreads PUBLIC cxx_std_20)
 
 if (MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")
-    target_compile_options(KTP PUBLIC /W4 /WX)
+    target_compile_options(KThreads PUBLIC /W4 /WX)
 else ()
-    target_compile_options(KTP PUBLIC -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(KThreads PUBLIC -Wall -Wextra -Wpedantic -Werror)
 endif ()
 
 # Build position independent code.
@@ -73,10 +73,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #        EXPORTS / IMPORTS FOR LIB      #
 #---------------------------------------#
 # Disable lib prefix
-set_target_properties(KTP PROPERTIES PREFIX "")
+set_target_properties(KThreads PROPERTIES PREFIX "")
 
 # Set dll name
-set_target_properties(KTP PROPERTIES OUTPUT_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
+set_target_properties(KThreads PROPERTIES OUTPUT_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
 
 
 

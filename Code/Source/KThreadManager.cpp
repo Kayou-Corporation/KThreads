@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace KTP
+namespace Kayou
 {
 	KThreadManager::KThreadManager(const char* name, uint8_t numThreads) : m_numThreads(numThreads)
 	{

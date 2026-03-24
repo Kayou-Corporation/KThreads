@@ -183,38 +183,52 @@
         }
     ],
 
-    "buildPresets": [
-        {
-            "name": "VS_2022 Debug",
-            "description": "Visual Studio multi-config Debug preset",
-            "configurePreset": "VS_2022",
-            "configuration": "Debug",
-            "verbose": true,
-            "jobs": 8
-        },
-        {
-            "name": "VS_2022 Release",
-            "description": "Visual Studio multi-config Release preset",
-            "configurePreset": "VS_2022",
-            "configuration": "Release",
-            "verbose": true,
-            "jobs": 8
-        },
-        {
-            "name": "GCC Debug",
-            "description": "GCC debug preset",
-            "configurePreset": "GCC",
-            "configuration": "Debug",
-            "verbose": true
-        },
-        {
-            "name": "GCC Release",
-            "description": "GCC debug preset",
-            "configurePreset": "GCC",
-            "configuration": "Release",
-            "verbose": true
-        }
-    ],
+  "buildPresets": [
+    {
+      "name": "VS_2022 Debug",
+      "description": "Visual Studio multi-config Debug preset",
+      "configurePreset": "VS_2022",
+      "configuration": "Debug",
+      "verbose": true,
+      "jobs": 8
+    },
+    {
+      "name": "VS_2022 Release",
+      "description": "Visual Studio multi-config Release preset",
+      "configurePreset": "VS_2022",
+      "configuration": "Release",
+      "verbose": true,
+      "jobs": 8
+    },
+    {
+      "name": "GCC Debug",
+      "description": "GCC debug preset",
+      "configurePreset": "GCC",
+      "configuration": "Debug",
+      "verbose": true
+    },
+    {
+      "name": "GCC Release",
+      "description": "GCC release preset",
+      "configurePreset": "GCC",
+      "configuration": "Release",
+      "verbose": true
+    },
+    {
+      "name": "Clang Debug",
+      "description": "Clang debug preset",
+      "configurePreset": "Clang",
+      "configuration": "Debug",
+      "verbose": true
+    },
+    {
+      "name": "Clang Release",
+      "description": "Clang release preset",
+      "configurePreset": "Clang",
+      "configuration": "Release",
+      "verbose": true
+    }
+  ],
     "testPresets": [
         {
             "name": "test-common",

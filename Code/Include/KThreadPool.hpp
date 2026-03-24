@@ -5,7 +5,7 @@
 
 #include "KThreadManager.hpp"
 
-namespace KTP
+namespace Kayou
 {
 	class KThreadPool
 	{

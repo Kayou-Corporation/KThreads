@@ -20,7 +20,7 @@ inline void SetThreadName(std::thread& t, const std::string& name) {
 }
 #endif
 
-namespace KTP
+namespace Kayou
 {
 	class KThreadManager
 	{
