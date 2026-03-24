@@ -8,25 +8,27 @@
 #if defined(_WIN32)
 #include <windows.h>
 
-inline void SetThreadName(std::thread& t, const std::wstring& name) {
-	SetThreadDescription(t.native_handle(), name.c_str());
+inline void SetThreadName(std::thread& t, const std::string& name) 
+{
+	SetThreadDescription(t.native_handle(), std::wstring(name.begin(), name.end()).c_str());
 }
 #endif
 #if defined(__linux__)
 #include <pthread.h>
 
-inline void SetThreadName(std::thread& t, const std::string& name) {
+inline void SetThreadName(std::thread& t, const std::string& name) 
+{
 	pthread_setname_np(t.native_handle(), name.c_str());
 }
 #endif
 
 namespace Kayou
 {
-	class KThreadManager
+	class ThreadManager
 	{
 	public:
-		KThreadManager(const char* name, uint8_t numThreads);
-		~KThreadManager();
+		ThreadManager(const char* name, uint8_t numThreads);
+		~ThreadManager();
 
 		void Enqueue(std::function<void()> const& task);
 		void WaitUntilFinished();

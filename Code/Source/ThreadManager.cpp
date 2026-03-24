@@ -1,14 +1,14 @@
-#include "KThreadManager.hpp"
+#include "ThreadManager.hpp"
 
 #include <string>
 
 namespace Kayou
 {
-	KThreadManager::KThreadManager(const char* name, uint8_t numThreads) : m_numThreads(numThreads)
+	ThreadManager::ThreadManager(const char* name, uint8_t numThreads) : m_numThreads(numThreads)
 	{
 		for (uint8_t i = 0u; i < m_numThreads; ++i)
 		{
-			m_threads.emplace_back(&KThreadManager::CheckQueue, this);
+			m_threads.emplace_back(&ThreadManager::CheckQueue, this);
 			std::string threadName = std::string(name) + "Thread";
 
 			if (m_numThreads > 1u)
@@ -16,11 +16,11 @@ namespace Kayou
 				threadName += std::to_string(i);
 			}
 
-			SetThreadName(m_threads[i], std::wstring(threadName.begin(), threadName.end()));
+			SetThreadName(m_threads[i], threadName);
 		}
 	}
 
-	KThreadManager::~KThreadManager()
+	ThreadManager::~ThreadManager()
 	{
 		m_stop.store(true, std::memory_order_release);
 		m_waitCondition.notify_all();
@@ -35,7 +35,7 @@ namespace Kayou
 		m_threads.clear();
 	}
 
-	void KThreadManager::Enqueue(std::function<void()> const& task)
+	void ThreadManager::Enqueue(std::function<void()> const& task)
 	{
 		m_tasksRemaining.fetch_add(1u, std::memory_order_acq_rel);
 		{
@@ -44,13 +44,13 @@ namespace Kayou
 		}
 	}
 
-	void KThreadManager::WaitUntilFinished()
+	void ThreadManager::WaitUntilFinished()
 	{
 		std::unique_lock<std::mutex> lock(m_queueMutex);
 		m_finishCondition.wait(lock, [this]() { return m_tasksRemaining.load(std::memory_order_acquire) == 0u; });
 	}
 
-	void KThreadManager::CheckQueue()
+	void ThreadManager::CheckQueue()
 	{
 		while (true)
 		{

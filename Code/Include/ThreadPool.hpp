@@ -3,15 +3,15 @@
 #include <memory>
 #include <unordered_map>
 
-#include "KThreadManager.hpp"
+#include "ThreadManager.hpp"
 
 namespace Kayou
 {
-	class KThreadPool
+	class ThreadPool
 	{
 	public:
-		KThreadPool() = default;
-		~KThreadPool();
+		ThreadPool() = default;
+		~ThreadPool();
 
 		void InitQueue(const char* queueName, uint8_t numThreads);
 		void EnqueueTask(const char* queueName, std::function<void()> const& task) const;
@@ -20,6 +20,6 @@ namespace Kayou
 		void ReleaseQueue(const char* queueName);
 
 	private:
-		std::unordered_map<const char*, std::unique_ptr<KThreadManager>> m_threadManagers;
+		std::unordered_map<const char*, std::unique_ptr<ThreadManager>> m_threadManagers;
 	};
 }

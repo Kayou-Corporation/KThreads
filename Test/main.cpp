@@ -1,7 +1,7 @@
 #include <iostream>
 #include <thread>
 
-#include "KThreadPool.hpp"
+#include "ThreadPool.hpp"
 
 static std::mutex COUT_MUTEX;
 
@@ -9,7 +9,7 @@ int main()
 {
 	for (int i = 0; i < 100; ++i)
 	{
-		Kayou::KThreadPool threadPool;
+		Kayou::ThreadPool threadPool;
 		threadPool.InitQueue("Worker", 8);
 		for (int i = 0; i < 10; ++i)
 		{
