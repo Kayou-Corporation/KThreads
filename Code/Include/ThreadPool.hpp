@@ -13,7 +13,7 @@ namespace Kayou
 		ThreadPool() = default;
 		~ThreadPool();
 
-		void InitQueue(const char* queueName, uint8_t numThreads);
+		void InitQueue(const char* queueName, uint8_t numThreads, float highPriorityProportion = 1.f);
 		void EnqueueTask(const char* queueName, std::function<void()> const& task) const;
 		void WaitUntilQueueFinished(const char* queueName) const;
 		void WaitUntilAllFinished() const;
