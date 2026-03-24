@@ -4,14 +4,16 @@
 
 namespace Kayou
 {
-	ThreadManager::ThreadManager(const char* name, uint8_t numThreads, float highPriorityProportion) : m_numThreads(numThreads)
+	ThreadManager::ThreadManager(const char* name, const uint8_t numThreads, float highPriorityProportion) : m_numThreads(numThreads)
 	{
 		highPriorityProportion = highPriorityProportion > 1.f ? 1.f : highPriorityProportion;
 
-		uint8_t numHighPriority = static_cast<uint8_t>(ceil(static_cast<float>(numThreads) * highPriorityProportion));
+		uint8_t numHighPriority = static_cast<uint8_t>(ceilf(static_cast<float>(numThreads) * highPriorityProportion));
 
 		if (numHighPriority == numThreads)
 			m_hasOnePriority = true;
+
+		numHighPriority--;
 
 		for (uint8_t i = 0u; i < m_numThreads; ++i)
 		{
@@ -62,7 +64,7 @@ namespace Kayou
 			m_lowPriorityTaskQueue.pop();
 	}
 
-	void ThreadManager::Enqueue(std::function<void()> const& task, Priority priority)
+	void ThreadManager::Enqueue(std::function<void()> const& task, const Priority priority)
 	{
 		m_tasksRemaining.fetch_add(1u, std::memory_order_acq_rel);
 
