@@ -67,22 +67,21 @@ namespace Kayou
 			m_lowPriorityTaskQueue.pop();
 	}
 
-	void ThreadManager::Enqueue(std::function<void()> const& task, const Priority priority)
+	void ThreadManager::Enqueue(std::function<void()> task, const Priority priority)
 	{
-		m_tasksRemaining.fetch_add(1u, std::memory_order_acq_rel);
+		m_tasksRemaining.fetch_add(1u, std::memory_order_release);
 
 		if (priority == Priority::High || m_hasOnePriority)
 		{
 			std::lock_guard<std::mutex> lock(m_highPriorityQueueMutex);
-			m_highPriorityTaskQueue.emplace(task);
-			m_highPriorityWaitCondition.notify_all();
-			m_lowPriorityWaitCondition.notify_all();
+			m_highPriorityTaskQueue.emplace(std::move(task));
+			m_highPriorityWaitCondition.notify_one();
 		}
 		else
 		{
 			std::lock_guard<std::mutex> lock(m_lowPriorityQueueMutex);
-			m_lowPriorityTaskQueue.emplace(task);
-			m_lowPriorityWaitCondition.notify_all();
+			m_lowPriorityTaskQueue.emplace(std::move(task));
+			m_lowPriorityWaitCondition.notify_one();
 		}
 	}
 
@@ -144,15 +143,27 @@ namespace Kayou
 
 	bool ThreadManager::ProcessLowPriority(std::function<void()>& task)
 	{
-		std::unique_lock<std::mutex> lock(m_lowPriorityQueueMutex);
-
-		if (m_lowPriorityTaskQueue.empty() && m_tasksRemaining.load(std::memory_order_acquire) != 0u)
 		{
-			lock.unlock();
-
-			return ProcessHighPriority(task);
+			std::lock_guard<std::mutex> lock(m_lowPriorityQueueMutex);
+			if (!m_lowPriorityTaskQueue.empty())
+			{
+				task = std::move(m_lowPriorityTaskQueue.front());
+				m_lowPriorityTaskQueue.pop();
+				return true;
+			}
 		}
 
+		{
+			std::lock_guard<std::mutex> lock(m_highPriorityQueueMutex);
+			if (!m_highPriorityTaskQueue.empty())
+			{
+				task = std::move(m_highPriorityTaskQueue.front());
+				m_highPriorityTaskQueue.pop();
+				return true;
+			}
+		}
+
+		std::unique_lock<std::mutex> lock(m_lowPriorityQueueMutex);
 		m_lowPriorityWaitCondition.wait(lock, [this]() { return m_stop.load(std::memory_order_acquire) || !m_lowPriorityTaskQueue.empty(); });
 
 		if (m_stop.load(std::memory_order_acquire))

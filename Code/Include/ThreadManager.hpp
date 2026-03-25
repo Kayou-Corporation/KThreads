@@ -37,7 +37,7 @@ namespace Kayou
 		ThreadManager(const char* name, uint8_t numThreads, uint8_t highPriorityNumber = 0);
 		~ThreadManager();
 
-		void Enqueue(std::function<void()> const& task, Priority priority = Priority::High);
+		void Enqueue(std::function<void()> task, Priority priority = Priority::High);
 		void WaitUntilFinished();
 
 	private:

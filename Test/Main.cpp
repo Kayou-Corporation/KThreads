@@ -15,8 +15,8 @@ inline void DoWork(uint32_t n)
 int main()
 {
 	Kayou::ThreadPool threadPool;
-	threadPool.InitQueue("Worker", 8, 0); // no priority
-	threadPool.InitQueue("Kayou", 8, 5);
+	threadPool.InitQueue("Worker", 16, 0); // no priority
+	threadPool.InitQueue("Kayou", 16, 10);
 
     constexpr uint32_t numTasks = 1'000'000;
     constexpr uint32_t workPerTask = 100;

@@ -14,7 +14,7 @@ namespace Kayou
 		m_threadManagers.try_emplace(queueName, std::make_unique<ThreadManager>(queueName, numThreads, highPriorityNumber));
 	}
 
-	void ThreadPool::EnqueueTask(const char* queueName, std::function<void()> const& task, Priority priority) const
+	void ThreadPool::EnqueueTask(const char* queueName, std::function<void()> task, Priority priority) const
 	{
 		m_threadManagers.at(queueName)->Enqueue(task, priority);
 	}
