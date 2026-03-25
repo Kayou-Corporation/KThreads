@@ -9,14 +9,14 @@ namespace Kayou
 		m_threadManagers.clear();
 	}
 
-	void ThreadPool::InitQueue(const char* queueName, uint8_t numThreads, float highPriorityProportion)
+	void ThreadPool::InitQueue(const char* queueName, uint8_t numThreads, uint8_t highPriorityNumber)
 	{
-		m_threadManagers.try_emplace(queueName, std::make_unique<ThreadManager>(queueName, numThreads, highPriorityProportion));
+		m_threadManagers.try_emplace(queueName, std::make_unique<ThreadManager>(queueName, numThreads, highPriorityNumber));
 	}
 
-	void ThreadPool::EnqueueTask(const char* queueName, std::function<void()> const& task) const
+	void ThreadPool::EnqueueTask(const char* queueName, std::function<void()> const& task, Priority priority) const
 	{
-		m_threadManagers.at(queueName)->Enqueue(task);
+		m_threadManagers.at(queueName)->Enqueue(task, priority);
 	}
 
 	void ThreadPool::WaitUntilQueueFinished(const char* queueName) const

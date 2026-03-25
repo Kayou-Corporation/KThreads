@@ -36,7 +36,7 @@ namespace Kayou
 	class ThreadManager
 	{
 	public:
-		ThreadManager(const char* name, uint8_t numThreads, float highPriorityProportion = 1.f);
+		ThreadManager(const char* name, uint8_t numThreads, uint8_t highPriorityNumber = 0);
 		~ThreadManager();
 
 		void Enqueue(std::function<void()> const& task, Priority priority = Priority::High);
@@ -44,7 +44,6 @@ namespace Kayou
 
 	private:
 		std::vector<std::thread> m_threads;
-		std::unordered_map<std::thread::id, Priority> m_priorities;
 
 		std::queue<std::function<void()>> m_highPriorityTaskQueue;
 		std::queue<std::function<void()>> m_lowPriorityTaskQueue;
@@ -59,8 +58,7 @@ namespace Kayou
 		uint8_t m_numThreads;
 		bool m_hasOnePriority = false;
 
-		void CheckQueue();
-		bool ProcessPriority(std::function<void()>& task);
+		void CheckQueue(Priority priority);
 		bool ProcessHighPriority(std::function<void()>& task);
 		bool ProcessLowPriority(std::function<void()>& task);
 	};
