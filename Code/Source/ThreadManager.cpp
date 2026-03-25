@@ -3,7 +3,6 @@
 #include <string>
 #include <iostream>
 #include<syncstream>
-#include <stdexcept>
 
 namespace Kayou
 {

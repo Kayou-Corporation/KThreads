@@ -4,9 +4,7 @@
 #include <mutex>
 #include <queue>
 #include <thread>
-#include <unordered_map>
 #include <condition_variable>
-#include <cmath>
 
 #if defined(_WIN32)
 #include <windows.h>
