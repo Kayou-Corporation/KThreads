@@ -84,7 +84,7 @@ int main()
 
     time = std::chrono::duration<double>(end - start).count();
     std::cout << "Time: " << time << " s\n";
-    std::cout << "Avg enqueue time: " << (time / N) << "\n";
+    std::cout << "Avg enqueue time: " << (time / N) * 1e+9 << " ns\n";
 
 	return 0;
 }
