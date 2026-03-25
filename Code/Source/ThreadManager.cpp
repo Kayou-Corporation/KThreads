@@ -54,6 +54,10 @@ namespace Kayou
 			{
 				m_threads[i].join();
 			}
+			else
+			{
+				std::cerr << "thread not joinable\n";
+			}
 		}
 		m_threads.clear();
 
@@ -72,13 +76,14 @@ namespace Kayou
 		{
 			std::lock_guard<std::mutex> lock(m_highPriorityQueueMutex);
 			m_highPriorityTaskQueue.emplace(task);
-			m_highPriorityWaitCondition.notify_one();
+			m_highPriorityWaitCondition.notify_all();
+			m_lowPriorityWaitCondition.notify_all();
 		}
 		else
 		{
 			std::lock_guard<std::mutex> lock(m_lowPriorityQueueMutex);
 			m_lowPriorityTaskQueue.emplace(task);
-			m_lowPriorityWaitCondition.notify_one();
+			m_lowPriorityWaitCondition.notify_all();
 		}
 	}
 
