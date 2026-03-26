@@ -22,7 +22,7 @@ add_executable(KThreads_TEST "Main.cpp")
 #---------------------------------------#
 #                COMPILE MODE           #
 #---------------------------------------#
-target_compile_features(KThreads_TEST PUBLIC cxx_std_20)
+target_compile_features(KThreads_TEST PUBLIC cxx_std_23)
 
 if(MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")

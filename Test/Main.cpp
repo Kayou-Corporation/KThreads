@@ -15,14 +15,14 @@ inline void DoWork(uint32_t n)
 int main()
 {
 	Kayou::ThreadPool threadPool;
-	threadPool.InitQueue("Worker", 16, 0); // no priority
-	threadPool.InitQueue("Kayou", 16, 10);
-	threadPool.InitQueue("Enqueue", 16, 10);
+	threadPool.InitQueue("Worker", 8);
+	threadPool.InitQueue("Kayou", 8);
+	threadPool.InitQueue("Enqueue", 8);
 
     constexpr uint32_t numTasks = 1'000'000;
     constexpr uint32_t workPerTask = 100;
 
-    const auto work = [=]()
+    auto work = [=]()
         {
             DoWork(workPerTask);
         };
@@ -37,7 +37,7 @@ int main()
 
     for (uint32_t i = 0; i < numTasks; ++i)
     {
-        threadPool.EnqueueTask("Worker", work);
+        threadPool.EnqueueTask("Worker", std::move(work));
     }
 
     threadPool.WaitUntilAllFinished();
@@ -59,7 +59,7 @@ int main()
     {
         priority = i % 10 == 0 ? Kayou::Priority::Low : Kayou::Priority::High;
 
-        threadPool.EnqueueTask("Kayou", work, priority);
+        threadPool.EnqueueTask("Kayou", std::move(work), priority);
     }
 
     threadPool.WaitUntilAllFinished();
@@ -73,18 +73,16 @@ int main()
 
     std::cout << "<---------Time test : enqueue latency--------->\n";
 
-    const auto task = [] {};
+    auto task = [] {};
 
     auto start2 = std::chrono::high_resolution_clock::now();
 
     for (uint32_t i = 0; i < numTasks; ++i)
     {
-        threadPool.EnqueueTask("Enqueue", task);
+        threadPool.EnqueueTask("Enqueue", std::move(task));
     }
 
     auto end2 = std::chrono::high_resolution_clock::now();
-
-    threadPool.WaitUntilAllFinished();
 
     time = std::chrono::duration<double>(end2 - start2).count();
     std::cout << "Time: " << time << " s\n";

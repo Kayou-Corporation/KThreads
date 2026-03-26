@@ -50,7 +50,7 @@ target_include_directories(KThreads PUBLIC "Code/Include")
 #---------------------------------------#
 #                COMPILE MODE           #
 #---------------------------------------#
-target_compile_features(KThreads PUBLIC cxx_std_20)
+target_compile_features(KThreads PUBLIC cxx_std_23)
 
 if (MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")

@@ -34,30 +34,26 @@ namespace Kayou
 	class ThreadManager
 	{
 	public:
-		ThreadManager(const char* name, uint8_t numThreads, uint8_t highPriorityNumber = 0);
+		ThreadManager(const char* name, uint8_t numThreads);
 		~ThreadManager();
 
-		void Enqueue(std::function<void()> task, Priority priority = Priority::High);
+		void Enqueue(std::move_only_function<void()> task, Priority priority = Priority::High);
 		void WaitUntilFinished();
 
 	private:
 		std::vector<std::thread> m_threads;
 
-		std::queue<std::function<void()>> m_highPriorityTaskQueue;
-		std::queue<std::function<void()>> m_lowPriorityTaskQueue;
+		std::queue<std::move_only_function<void()>> m_highPriorityTaskQueue;
+		std::queue<std::move_only_function<void()>> m_lowPriorityTaskQueue;
 
-		std::mutex m_highPriorityQueueMutex;
-		std::mutex m_lowPriorityQueueMutex;
+		std::mutex m_mutex;
 		std::mutex m_finishMutex;
 
-		std::condition_variable m_highPriorityWaitCondition, m_lowPriorityWaitCondition, m_finishCondition;
+		std::condition_variable m_waitCondition, m_finishCondition;
 		std::atomic<uint32_t> m_tasksRemaining{ 0 };
-		std::atomic<bool> m_stop{ false };
+		bool m_stop = false;
 		uint8_t m_numThreads;
-		bool m_hasOnePriority = false;
 
-		void CheckQueue(Priority priority);
-		bool ProcessHighPriority(std::function<void()>& task);
-		bool ProcessLowPriority(std::function<void()>& task);
+		void CheckQueue();
 	};
 }

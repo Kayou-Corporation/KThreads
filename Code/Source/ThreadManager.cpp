@@ -2,34 +2,15 @@
 
 #include <string>
 #include <iostream>
-#include<syncstream>
+#include <syncstream>
 
 namespace Kayou
 {
-	ThreadManager::ThreadManager(const char* name, const uint8_t numThreads, uint8_t highPriorityNumber) : m_numThreads(numThreads)
+	ThreadManager::ThreadManager(const char* name, const uint8_t numThreads) : m_numThreads(numThreads)
 	{
-		uint8_t numHighPriority = highPriorityNumber;
-
-		bool isHighPriorityNumValid = (numHighPriority <= numThreads) && (numHighPriority > 0);
-
-		numHighPriority = isHighPriorityNumValid ? numHighPriority : numThreads;
-
-		if (!isHighPriorityNumValid || highPriorityNumber == numThreads)
-			m_hasOnePriority = true;
-
 		for (uint8_t i = 0u; i < m_numThreads; ++i)
 		{
-			Priority priority;
-
-			if (numHighPriority > 0)
-			{
-				priority = Priority::High;
-				numHighPriority--;
-			}
-			else
-				priority = Priority::Low;
-
-			m_threads.emplace_back([this, priority]() { CheckQueue(priority); });
+			m_threads.emplace_back(&ThreadManager::CheckQueue, this);
 			std::string threadName = std::string(name) + "Thread";
 
 			if (m_numThreads > 1u)
@@ -43,9 +24,12 @@ namespace Kayou
 
 	ThreadManager::~ThreadManager()
 	{
-		m_stop.store(true, std::memory_order_release);
-		m_highPriorityWaitCondition.notify_all();
-		m_lowPriorityWaitCondition.notify_all();
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			m_stop = true;
+		}
+
+		m_waitCondition.notify_all();
 
 		for (uint8_t i = 0u; i < m_numThreads; ++i)
 		{
@@ -63,22 +47,24 @@ namespace Kayou
 			m_lowPriorityTaskQueue.pop();
 	}
 
-	void ThreadManager::Enqueue(std::function<void()> task, const Priority priority)
+	void ThreadManager::Enqueue(std::move_only_function<void()> task, const Priority priority)
 	{
-		m_tasksRemaining.fetch_add(1u, std::memory_order_release);
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
 
-		if (priority == Priority::High || m_hasOnePriority)
-		{
-			std::lock_guard<std::mutex> lock(m_highPriorityQueueMutex);
-			m_highPriorityTaskQueue.emplace(std::move(task));
-			m_highPriorityWaitCondition.notify_one();
+			if (priority == Priority::High)
+			{
+				m_highPriorityTaskQueue.emplace(std::move(task));
+			}
+			else
+			{
+				m_lowPriorityTaskQueue.emplace(std::move(task));
+			}
+
+			m_waitCondition.notify_one();
 		}
-		else
-		{
-			std::lock_guard<std::mutex> lock(m_lowPriorityQueueMutex);
-			m_lowPriorityTaskQueue.emplace(std::move(task));
-			m_lowPriorityWaitCondition.notify_one();
-		}
+
+		m_tasksRemaining.fetch_add(1u, std::memory_order_release);
 	}
 
 	void ThreadManager::WaitUntilFinished()
@@ -87,21 +73,29 @@ namespace Kayou
 		m_finishCondition.wait(lock, [this]() { return m_tasksRemaining.load(std::memory_order_acquire) == 0u; });
 	}
 
-	void ThreadManager::CheckQueue(Priority priority)
+	void ThreadManager::CheckQueue()
 	{
 		while (true)
 		{
-			std::function<void()> task;
+			std::move_only_function<void()> task;
 
-			if (priority == Priority::High)
 			{
-				if (!ProcessHighPriority(task))
+				std::unique_lock<std::mutex> lock(m_mutex);
+				m_waitCondition.wait(lock, [this] { return m_stop || !m_highPriorityTaskQueue.empty() || !m_lowPriorityTaskQueue.empty(); });
+
+				if (m_stop && m_highPriorityTaskQueue.empty() && m_lowPriorityTaskQueue.empty())
 					return;
-			}
-			else
-			{
-				if (!ProcessLowPriority(task))
-					return;
+
+				if (!m_highPriorityTaskQueue.empty())
+				{
+					task = std::move(m_highPriorityTaskQueue.front());
+					m_highPriorityTaskQueue.pop();
+				}
+				else
+				{
+					task = std::move(m_lowPriorityTaskQueue.front());
+					m_lowPriorityTaskQueue.pop();
+				}
 			}
 
 			try
@@ -113,62 +107,12 @@ namespace Kayou
 				std::osyncstream(std::cerr) << e.what() << '\n';
 			}
 
-			const uint32_t remaining = m_tasksRemaining.fetch_sub(1u, std::memory_order_acq_rel) - 1u;
-			if (remaining == 0)
+			//const uint32_t remaining = m_tasksRemaining.fetch_sub(1u, std::memory_order_acq_rel) - 1u;
+			if (--m_tasksRemaining == 0)
 			{
 				std::lock_guard<std::mutex> lock(m_finishMutex);
 				m_finishCondition.notify_all();
 			}
 		}
-	}
-
-	bool ThreadManager::ProcessHighPriority(std::function<void()>& task)
-	{
-		std::unique_lock<std::mutex> lock(m_highPriorityQueueMutex);
-		m_highPriorityWaitCondition.wait(lock, [this]() { return m_stop.load(std::memory_order_acquire) || !m_highPriorityTaskQueue.empty(); });
-
-		if (m_stop.load(std::memory_order_acquire))
-		{
-			return false;
-		}
-
-		task = std::move(m_highPriorityTaskQueue.front());
-		m_highPriorityTaskQueue.pop();
-		return true;
-	}
-
-	bool ThreadManager::ProcessLowPriority(std::function<void()>& task)
-	{
-		{
-			std::lock_guard<std::mutex> lock(m_lowPriorityQueueMutex);
-			if (!m_lowPriorityTaskQueue.empty())
-			{
-				task = std::move(m_lowPriorityTaskQueue.front());
-				m_lowPriorityTaskQueue.pop();
-				return true;
-			}
-		}
-
-		{
-			std::lock_guard<std::mutex> lock(m_highPriorityQueueMutex);
-			if (!m_highPriorityTaskQueue.empty())
-			{
-				task = std::move(m_highPriorityTaskQueue.front());
-				m_highPriorityTaskQueue.pop();
-				return true;
-			}
-		}
-
-		std::unique_lock<std::mutex> lock(m_lowPriorityQueueMutex);
-		m_lowPriorityWaitCondition.wait(lock, [this]() { return m_stop.load(std::memory_order_acquire) || !m_lowPriorityTaskQueue.empty(); });
-
-		if (m_stop.load(std::memory_order_acquire))
-		{
-			return false;
-		}
-
-		task = std::move(m_lowPriorityTaskQueue.front());
-		m_lowPriorityTaskQueue.pop();
-		return true;
 	}
 }
