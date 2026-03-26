@@ -53,10 +53,6 @@ namespace Kayou
 			{
 				m_threads[i].join();
 			}
-			else
-			{
-				std::cerr << "thread not joinable\n";
-			}
 		}
 		m_threads.clear();
 
