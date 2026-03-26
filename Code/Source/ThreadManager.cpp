@@ -107,8 +107,8 @@ namespace Kayou
 				std::osyncstream(std::cerr) << e.what() << '\n';
 			}
 
-			//const uint32_t remaining = m_tasksRemaining.fetch_sub(1u, std::memory_order_acq_rel) - 1u;
-			if (--m_tasksRemaining == 0)
+			const uint32_t remaining = m_tasksRemaining.fetch_sub(1u, std::memory_order_acq_rel) - 1u;
+			if (remaining == 0)
 			{
 				std::lock_guard<std::mutex> lock(m_finishMutex);
 				m_finishCondition.notify_all();
